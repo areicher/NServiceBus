@@ -20,6 +20,9 @@ namespace NServiceBus
             this.owningTimeoutManager = owningTimeoutManager;
         }
 
+        // ReSharper disable once UnusedAutoPropertyAccessor.Global
+        public EndpointName EndpointName { get; set; }
+
         public override void Terminate(PhysicalMessageProcessingStageBehavior.Context context)
         {
             var message = context.GetPhysicalMessage();
@@ -113,7 +116,7 @@ namespace NServiceBus
                     State = message.Body,
                     Time = DateTimeExtensions.ToUtcDateTime(expire),
                     Headers = message.Headers,
-                    OwningTimeoutManager = owningTimeoutManager
+                    OwningTimeoutManager = EndpointName.ToString()
                 };
 
                 if (data.Time.AddSeconds(-1) <= DateTime.UtcNow)

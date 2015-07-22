@@ -6,6 +6,8 @@ namespace NServiceBus.Unicast
     using NServiceBus.ConsistencyGuarantees;
     using NServiceBus.DeliveryConstraints;
     using NServiceBus.Extensibility;
+    using NServiceBus.Features;
+    using NServiceBus.Features.Routing;
     using NServiceBus.MessageInterfaces;
     using NServiceBus.ObjectBuilder;
     using NServiceBus.OutgoingPipeline;
@@ -26,16 +28,7 @@ namespace NServiceBus.Unicast
             this.builder = builder;
             this.dispatcher = dispatcher;
             this.settings = settings;
-
-            //if we're a worker, send to the distributor data bus
-            if (settings.GetOrDefault<bool>("Worker.Enabled"))
-            {
-                sendLocalAddress = settings.Get<string>("MasterNode.Address");
-            }
-            else
-            {
-                sendLocalAddress = settings.LocalAddress();
-            }
+            sendLocalAddress = settings.Get<IPublicAddress>().TransportAddress;
         }
 
         /// <summary>
@@ -52,7 +45,7 @@ namespace NServiceBus.Unicast
         public void Publish(object message, NServiceBus.PublishOptions options)
         {
             var pipeline = new PipelineBase<OutgoingPublishContext>(builder, settings, settings.Get<PipelineConfiguration>().MainPipeline);
-         
+
             var publishContext = new OutgoingPublishContext(
                 incomingContext,
                 new OutgoingLogicalMessage(message),

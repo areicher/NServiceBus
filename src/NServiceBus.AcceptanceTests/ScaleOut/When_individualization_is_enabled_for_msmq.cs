@@ -1,6 +1,5 @@
 ﻿namespace NServiceBus.AcceptanceTests.ScaleOut
 {
-    using System.Linq;
     using NServiceBus.AcceptanceTesting;
     using NServiceBus.AcceptanceTests.EndpointTemplates;
     using NServiceBus.AcceptanceTests.ScenarioDescriptors;
@@ -15,7 +14,7 @@
             Scenario.Define<Context>()
                     .WithEndpoint<IndividualizedEndpoint>().Done(c => c.EndpointsStarted)
                     .Repeat(r => r.For<MsmqOnly>())
-                    .Should(c => Assert.AreEqual(c.EndpointName, c.Address.Split('@').First()))
+                    .Should(c => Assert.AreEqual(c.EndpointName, c.Address))
                     .Run();
         }
 
@@ -41,8 +40,8 @@
 
                 public void Start()
                 {
-                    Context.Address = ReadOnlySettings.LocalAddress();
-                    Context.EndpointName = ReadOnlySettings.EndpointName();
+                    Context.Address = ReadOnlySettings.RootLogicalAddress().ToString();
+                    Context.EndpointName = ReadOnlySettings.EndpointName().ToString();
                 }
 
                 public void Stop()

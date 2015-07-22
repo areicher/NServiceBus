@@ -17,23 +17,14 @@ namespace NServiceBus.Transports.Msmq
             this.errorQueueAddress = errorQueueAddress;
         }
 
-        public DequeueInfo Init(DequeueSettings settings)
+        public void Init(DequeueSettings settings)
         {
-            var msmqAddress = MsmqAddress.Parse(settings.QueueName);
-
-            var queueName = msmqAddress.Queue;
-            if (!string.Equals(msmqAddress.Machine, Environment.MachineName, StringComparison.OrdinalIgnoreCase))
-            {
-                var message = string.Format("MSMQ Dequeuing can only run against the local machine. Invalid queue name '{0}'", settings.QueueName);
-                throw new Exception(message);
-            }
-
-            var fullPath = MsmqUtilities.GetFullPath(queueName);
-            queue = new MessageQueue(fullPath, false, true, QueueAccessMode.Receive);
+            var msmqAddress = MsmqAddress.Parse(settings.TransportAddress);
+            queue = new MessageQueue(msmqAddress.FullPath, false, true, QueueAccessMode.Receive);
 
             if (isTransactional && !QueueIsTransactional())
             {
-                throw new ArgumentException("Queue must be transactional if you configure your endpoint to be transactional (" + settings.QueueName + ").");
+                throw new ArgumentException("Queue must be transactional if you configure your endpoint to be transactional (" + msmqAddress.Queue + ").");
             }
 
             queue.MessageReadPropertyFilter = DefaultReadPropertyFilter;
@@ -42,7 +33,6 @@ namespace NServiceBus.Transports.Msmq
             {
                 queue.Purge();
             }
-            return new DequeueInfo(queueName);
         }
 
         /// <summary>

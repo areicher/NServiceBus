@@ -2,6 +2,7 @@
 {
     using System.Linq;
     using NServiceBus.Config;
+    using NServiceBus.Features.Routing;
     using NServiceBus.Routing;
     using NServiceBus.Routing.MessageDrivenSubscriptions;
     using NServiceBus.Routing.StorageDrivenPublishing;
@@ -9,7 +10,7 @@
     using NServiceBus.TransportDispatch;
     using NServiceBus.Transports;
     using NServiceBus.Unicast.Messages;
-    using NServiceBus.Unicast.Routing;
+    using NServiceBus.Unicast.Subscriptions;
     using NServiceBus.Unicast.Subscriptions.MessageDrivenSubscriptions;
 
     class RoutingFeature : Feature
@@ -17,14 +18,26 @@
         public RoutingFeature()
         {
             EnableByDefault();
+            DependsOn<UnicastBus>();
+            Defaults(s =>
+            {
+                var overriddenPublicTransportAddress = s.GetOrDefault<string>("PublicTransportAddress");
+
+                var transport = s.Get<TransportDefinition>();
+                var defaultTransportAddress = transport.CreateInputQueueTransportAddress(s.RootLogicalAddress());
+                var publicAddressesConfiguration = new PublicAddressesConfiguration(overriddenPublicTransportAddress, defaultTransportAddress);
+                s.SetDefault<PublicAddressesConfiguration>(publicAddressesConfiguration);
+                s.SetDefault<IPublicAddress>(publicAddressesConfiguration);
+            });
         }
         protected internal override void Setup(FeatureConfigurationContext context)
         {
+            var publicAddress = context.Settings.Get<IPublicAddress>();
             var canReceive = !context.Settings.GetOrDefault<bool>("Endpoint.SendOnly");
             var transportDefinition = context.Settings.Get<TransportDefinition>();
             var staticRoutes = InitializeStaticRoutes(context.Settings);
 
-            context.Container.ConfigureComponent(b => new DetermineRouteForSendBehavior(context.Settings.LocalAddress(),
+            context.Container.ConfigureComponent(b => new DetermineRouteForSendBehavior(publicAddress.TransportAddress,
                new DefaultMessageRouter(staticRoutes)), DependencyLifecycle.InstancePerCall);
 
             if (transportDefinition.HasNativePubSubSupport)
@@ -45,14 +58,7 @@
             {
                 context.Pipeline.Register("ApplyReplyToAddress", typeof(ApplyReplyToAddressBehavior), "Applies the public reply to address to outgoing messages");
 
-                string replyToAddress;
-
-                if (!context.Settings.TryGet("PublicReturnAddress", out replyToAddress))
-                {
-                    replyToAddress = context.Settings.LocalAddress();
-                }
-
-                context.Container.ConfigureComponent(b => new ApplyReplyToAddressBehavior(replyToAddress), DependencyLifecycle.SingleInstance);
+                context.Container.ConfigureComponent(b => new ApplyReplyToAddressBehavior(publicAddress.TransportAddress), DependencyLifecycle.SingleInstance);
 
                 if (transportDefinition.HasNativePubSubSupport)
                 {
@@ -76,10 +82,11 @@
                     context.Pipeline.Register("MessageDrivenSubscribeTerminator", typeof(MessageDrivenSubscribeTerminator), "Sends subscription requests when message driven subscriptions is in use");
                     context.Pipeline.Register("MessageDrivenUnsubscribeTerminator", typeof(MessageDrivenUnsubscribeTerminator), "Sends requests to unsubscribe when message driven subscriptions is in use");
 
-                    context.Container.ConfigureComponent(b => new MessageDrivenSubscribeTerminator(subscriptionRouter, replyToAddress, b.Build<IDispatchMessages>()), DependencyLifecycle.SingleInstance);
-                    context.Container.ConfigureComponent(b => new MessageDrivenUnsubscribeTerminator(subscriptionRouter, replyToAddress, b.Build<IDispatchMessages>()), DependencyLifecycle.SingleInstance);
+                    context.Container.ConfigureComponent(b => new MessageDrivenSubscribeTerminator(subscriptionRouter, publicAddress.TransportAddress, b.Build<IDispatchMessages>()), DependencyLifecycle.SingleInstance);
+                    context.Container.ConfigureComponent(b => new MessageDrivenUnsubscribeTerminator(subscriptionRouter, publicAddress.TransportAddress, b.Build<IDispatchMessages>()), DependencyLifecycle.SingleInstance);
                 }
 
+                context.Container.ConfigureComponent(b => new ApplyReplyToAddressBehavior(publicAddress.TransportAddress), DependencyLifecycle.SingleInstance);
             }
         }
 

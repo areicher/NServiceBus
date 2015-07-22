@@ -12,12 +12,12 @@
     class SatellitePipelineModifications : PipelineModifications
     {
         public readonly string Name;
-        public readonly string ReceiveAddress;
+        public readonly string TransportAddress;
 
-        public SatellitePipelineModifications(string name, string receiveAddress)
+        public SatellitePipelineModifications(string name, string transportAddress)
         {
             Name = name;
-            ReceiveAddress = receiveAddress;
+            TransportAddress = transportAddress;
         }
     }
 }

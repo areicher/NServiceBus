@@ -912,6 +912,7 @@ namespace NServiceBus.Transports
 namespace NServiceBus.Unicast.Subscriptions
 {
     using System;
+    using System.Collections.Generic;
 
     [ObsoleteEx(RemoveInVersion = "7.0", TreatAsErrorFromVersion = "6.0", Message = "No longer used, safe to remove")]
     public class SubscriptionEventArgs : EventArgs
@@ -920,14 +921,7 @@ namespace NServiceBus.Unicast.Subscriptions
 
         public string MessageType { get; set; }
     }
-}
-
-
-namespace NServiceBus.Unicast.Routing
-{
-    using System;
-    using System.Collections.Generic;
-
+    
     [ObsoleteEx(RemoveInVersion = "7.0", TreatAsErrorFromVersion = "6.0", Message = "No longer used, safe to remove")]
     public class StaticMessageRouter
     {
@@ -967,5 +961,26 @@ namespace NServiceBus.AutomaticSubscriptions.Config
         {
             throw new NotImplementedException();
         }
+    }
+}
+
+namespace NServiceBus.Settings
+{
+    using System;
+
+    public partial class ScaleOutSettings
+    {
+        [ObsoleteEx(TreatAsErrorFromVersion = "6", RemoveInVersion = "7", ReplacementTypeOrMember = "Default starting with V6")]
+        public void UseSingleBrokerQueue()
+        {
+            throw new NotImplementedException();
+        }
+
+        [ObsoleteEx(TreatAsErrorFromVersion = "6", RemoveInVersion = "7", ReplacementTypeOrMember = "UniqueQueuePerEndpointInstance")]
+        public void UseUniqueBrokerQueuePerMachine()
+        {
+            throw new NotImplementedException();
+        }
+
     }
 }

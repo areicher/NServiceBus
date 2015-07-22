@@ -46,15 +46,19 @@
         /// <summary>
         /// Creates a new satellite processing pipeline.
         /// </summary>
-        public PipelineSettings AddSatellitePipeline(string name, string receiveAddress)
+        public PipelineSettings AddSatellitePipeline(string name, string relativeAddress, out string transportAddress)
         {
-            var pipelineModifications = new SatellitePipelineModifications(name, receiveAddress);
+            var rootLogicalAddress = config.Settings.RootLogicalAddress();
+            var satelliteLogicalAddress = rootLogicalAddress.Subscope(relativeAddress);
+            var transportDefinition = config.Settings.Get<TransportDefinition>();
+            transportAddress = transportDefinition.CreateInputQueueTransportAddress(satelliteLogicalAddress);
+
+            var pipelineModifications = new SatellitePipelineModifications(name, transportAddress);
             config.Settings.Get<PipelineConfiguration>().SatellitePipelines.Add(pipelineModifications);
             var newPipeline = new PipelineSettings(pipelineModifications);
 
             newPipeline.RegisterConnector<TransportReceiveToPhysicalMessageProcessingConnector>("Allows to abort processing the message");
-
-            config.Settings.Get<QueueBindings>().BindReceiving(receiveAddress);
+            config.Settings.Get<QueueBindings>().BindReceiving(transportAddress);
 
             return newPipeline;
         }

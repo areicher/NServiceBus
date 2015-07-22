@@ -21,10 +21,7 @@ namespace NServiceBus.Persistence.SubscriptionStorage
 
         public void Init()
         {
-            var path = MsmqUtilities.GetFullPath(Queue);
-
-            q = new MessageQueue(path);
-
+            q = new MessageQueue(Queue.FullPath);
             bool transactional;
             try
             {

@@ -43,7 +43,7 @@
 
                 public void Start()
                 {
-                    Context.Address = Settings.LocalAddress();
+                    Context.Address = Settings.RootLogicalAddress().ToString();
                 }
 
                 public void Stop()

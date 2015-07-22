@@ -47,7 +47,7 @@ namespace NServiceBus
             LogCorruptedMessage(message, ex, errorQueue);
 
 
-            using (var nativeErrorQueue = new MessageQueue(MsmqUtilities.GetFullPath(errorQueue), false, true, QueueAccessMode.Send))
+            using (var nativeErrorQueue = new MessageQueue(errorQueue.FullPath, false, true, QueueAccessMode.Send))
             {
                 onError(nativeErrorQueue, message);
             }

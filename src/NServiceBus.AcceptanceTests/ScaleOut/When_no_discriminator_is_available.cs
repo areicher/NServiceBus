@@ -52,11 +52,6 @@
                 config.EnableFeature<TransportThatDoesNotSetADefaultDiscriminatorConfigurator>();
             }
 
-            public override string GetSubScope(string address, string qualifier)
-            {
-                return address + "." + qualifier;
-            }
-
             public override IEnumerable<Type> GetSupportedDeliveryConstraints()
             {
                 return new List<Type>();
@@ -70,6 +65,10 @@
             public override IManageSubscriptions GetSubscriptionManager()
             {
                 throw new NotImplementedException();
+            }
+            public override string CreateInputQueueTransportAddress(LogicalAddress logicalAddress)
+            {
+                return logicalAddress.ToString();
             }
         }
 

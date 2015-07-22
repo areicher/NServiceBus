@@ -90,10 +90,10 @@ namespace NServiceBus.Unicast.Transport
                 throw new InvalidOperationException("The transport is already started");
             }
 
-            Logger.DebugFormat("Pipeline {0} is starting receiver for queue {1}.", Id, dequeueSettings.QueueName);
+            Logger.DebugFormat("Pipeline {0} is starting receiver for queue {0}.", Id, dequeueSettings.TransportAddress);
 
-            var dequeueInfo = receiver.Init(dequeueSettings);
-            pipeline.Initialize(new PipelineInfo(Id, dequeueInfo.PublicAddress));
+            receiver.Init(dequeueSettings);
+            pipeline.Initialize(new PipelineInfo(Id, dequeueSettings.TransportAddress));
             await pipeline.Warmup();
 
             StartReceiver();

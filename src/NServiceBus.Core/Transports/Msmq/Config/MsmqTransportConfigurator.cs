@@ -52,7 +52,7 @@
             static void CheckQueue(string address)
             {
                 var msmqAddress = MsmqAddress.Parse(address);
-                var queuePath = MsmqQueueCreator.GetFullPathWithoutPrefix(msmqAddress);
+                var queuePath = msmqAddress.PathWithoutPrefix;
 
                 if (MessageQueue.Exists(queuePath))
                 {

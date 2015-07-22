@@ -6,6 +6,7 @@
     using NServiceBus.AcceptanceTesting;
     using NServiceBus.AcceptanceTests.EndpointTemplates;
     using NServiceBus.Configuration.AdvanceExtensibility;
+    using NServiceBus.Features;
     using NServiceBus.Outbox;
     using NServiceBus.Persistence;
     using NServiceBus.Saga;
@@ -24,7 +25,7 @@
                 .Done(c => c.Done)
                 .Run();
 
-            Assert.AreEqual(1, context.NumberOfOps, "Request to clear should be in the outbox");
+            Assert.AreEqual(2, context.NumberOfOps, "Request to clear and a done signal should be in the outbox");
         }
 
         public class Context : ScenarioContext
@@ -42,21 +43,30 @@
                     {
                         b.GetSettings().Set("DisableOutboxTransportCheck", true);
                         b.EnableOutbox();
+                        b.EnableFeature<TimeoutManager>();
                         b.UsePersistence<FakeOutboxPersistence>();
                         b.RegisterComponents(c => c.ConfigureComponent<FakeOutbox>(DependencyLifecycle.SingleInstance));
                     });
             }
 
-            class PlaceOrderSaga : Saga<PlaceOrderSaga.PlaceOrderSagaData>, IAmStartedByMessages<PlaceOrder>
+            class DoneHandler : IHandleMessages<SignalDone>
             {
                 public Context Context { get; set; }
 
+                public void Handle(SignalDone message)
+                {
+                    Context.Done = true;
+                }
+            }
+
+            class PlaceOrderSaga : Saga<PlaceOrderSaga.PlaceOrderSagaData>, IAmStartedByMessages<PlaceOrder>
+            {
                 public void Handle(PlaceOrder message)
                 {
                     Data.DataId = message.DataId;
 
+                    Bus.SendLocal(new SignalDone());
                     MarkAsComplete();
-                    Context.Done = true;
                 }
 
                 protected override void ConfigureHowToFindSaga(SagaPropertyMapper<PlaceOrderSagaData> mapper)
@@ -88,7 +98,7 @@
 
             public void Store(string messageId, IEnumerable<TransportOperation> transportOperations, OutboxStorageOptions options)
             {
-                context.NumberOfOps = transportOperations.Count();
+                context.NumberOfOps += transportOperations.Count();
             }
 
             public void SetAsDispatched(string messageId, OutboxStorageOptions options)
@@ -101,6 +111,10 @@
         public class PlaceOrder : ICommand
         {
             public Guid DataId { get; set; }
+        }
+
+        public class SignalDone : ICommand
+        {
         }
     }
 

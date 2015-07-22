@@ -3,6 +3,7 @@
     using System;
     using NServiceBus.AcceptanceTesting;
     using NServiceBus.AcceptanceTests.EndpointTemplates;
+    using NServiceBus.Features;
     using NServiceBus.Saga;
     using NUnit.Framework;
 
@@ -38,7 +39,7 @@
         {
             public SagaEndpoint()
             {
-                EndpointSetup<DefaultServer>();
+                EndpointSetup<DefaultServer>(c => c.EnableFeature<TimeoutManager>());
             }
 
             class CustomFinder : IFindSagas<TestSagaWithCustomFinder.TestSagaWithCustomFinderSagaData>.Using<StartSagaMessage>

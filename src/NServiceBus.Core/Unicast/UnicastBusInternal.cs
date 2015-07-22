@@ -7,6 +7,7 @@ namespace NServiceBus.Unicast
     using System.Security.Principal;
     using System.Threading;
     using System.Threading.Tasks;
+    using System.Web.ModelBinding;
     using NServiceBus.Features;
     using NServiceBus.Licensing;
     using NServiceBus.Logging;
@@ -94,12 +95,13 @@ namespace NServiceBus.Unicast
         IEnumerable<TransportReceiver> BuildPipelines()
         {
             var pipelinesCollection = settings.Get<PipelineConfiguration>();
-
-            yield return BuildPipelineInstance(pipelinesCollection.MainPipeline, pipelinesCollection.ReceiveBehavior, "Main", settings.LocalAddress());
+            var transportDefinition = settings.Get<TransportDefinition>();
+            var transportAddress = transportDefinition.CreateInputQueueTransportAddress(settings.RootLogicalAddress());
+            yield return BuildPipelineInstance(pipelinesCollection.MainPipeline, pipelinesCollection.ReceiveBehavior, "Main", transportAddress);
 
             foreach (var satellite in pipelinesCollection.SatellitePipelines)
             {
-                yield return BuildPipelineInstance(satellite, pipelinesCollection.ReceiveBehavior, satellite.Name, satellite.ReceiveAddress);
+                yield return BuildPipelineInstance(satellite, pipelinesCollection.ReceiveBehavior, satellite.Name, satellite.TransportAddress);
             }
         }
 

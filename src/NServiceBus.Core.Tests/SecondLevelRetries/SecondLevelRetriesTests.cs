@@ -26,8 +26,8 @@
 
             var delay = TimeSpan.FromSeconds(5);
             var fakeDispatchPipeline = new FakeDispatchPipeline();
-            var behavior = new SecondLevelRetriesBehavior(fakeDispatchPipeline, new FakePolicy(delay), notifications);
-            behavior.Initialize(new PipelineInfo("Test", "test-address-for-this-pipeline"));
+            var behavior = new SecondLevelRetriesBehavior(fakeDispatchPipeline, new FakePolicy(delay), notifications, "PublicAddressOfThisEndpoint");
+            behavior.Initialize(new PipelineInfo("Test", "IncomingQueueForThisPipeline"));
 
             var slrNotification = new SecondLevelRetry();
 
@@ -39,7 +39,7 @@
 
             Assert.AreEqual("someid", fakeDispatchPipeline.DispatchContext.Get<OutgoingMessage>().Headers[Headers.MessageId]);
             Assert.AreEqual(delay, ((DelayDeliveryWith)fakeDispatchPipeline.DispatchContext.GetDeliveryConstraints().Single(c=>c is DelayDeliveryWith)).Delay);
-            Assert.AreEqual("test-address-for-this-pipeline", ((DirectToTargetDestination)fakeDispatchPipeline.DispatchContext.Get<RoutingStrategy>()).Destination);
+            Assert.AreEqual("PublicAddressOfThisEndpoint", ((DirectToTargetDestination)fakeDispatchPipeline.DispatchContext.Get<RoutingStrategy>()).Destination);
             Assert.AreEqual("testex", slrNotification.Exception.Message);
         }
 
@@ -48,7 +48,7 @@
         {
             var delay = TimeSpan.FromSeconds(5);
             var fakeDispatchPipeline = new FakeDispatchPipeline();
-            var behavior = new SecondLevelRetriesBehavior(fakeDispatchPipeline, new FakePolicy(delay), new BusNotifications());
+            var behavior = new SecondLevelRetriesBehavior(fakeDispatchPipeline, new FakePolicy(delay), new BusNotifications(), "MyAddress");
             behavior.Initialize(new PipelineInfo("Test", "test-address-for-this-pipeline"));
 
             behavior.Invoke(CreateContext("someid", 0), () => { throw new Exception("testex"); });
@@ -60,7 +60,7 @@
         public void ShouldSkipRetryIfNoDelayIsReturned()
         {
             var fakeDispatchPipeline = new FakeDispatchPipeline();
-            var behavior = new SecondLevelRetriesBehavior(fakeDispatchPipeline, new FakePolicy(), new BusNotifications());
+            var behavior = new SecondLevelRetriesBehavior(fakeDispatchPipeline, new FakePolicy(), new BusNotifications(), "MyAddress");
             behavior.Initialize(new PipelineInfo("Test", "test-address-for-this-pipeline"));
             var context = CreateContext("someid", 1);
 
@@ -72,7 +72,7 @@
         public void ShouldSkipRetryForDeserializationErrors()
         {
             var fakeDispatchPipeline = new FakeDispatchPipeline();
-            var behavior = new SecondLevelRetriesBehavior(fakeDispatchPipeline, new FakePolicy(TimeSpan.FromSeconds(5)), new BusNotifications());
+            var behavior = new SecondLevelRetriesBehavior(fakeDispatchPipeline, new FakePolicy(TimeSpan.FromSeconds(5)), new BusNotifications(), "MyAddress");
             behavior.Initialize(new PipelineInfo("Test", "test-address-for-this-pipeline"));
             var context = CreateContext("someid", 1);
 
@@ -86,7 +86,7 @@
             var retryPolicy = new FakePolicy(TimeSpan.FromSeconds(5));
 
             var fakeDispatchPipeline = new FakeDispatchPipeline();
-            var behavior = new SecondLevelRetriesBehavior(fakeDispatchPipeline, retryPolicy, new BusNotifications());
+            var behavior = new SecondLevelRetriesBehavior(fakeDispatchPipeline, retryPolicy, new BusNotifications(), "MyAddress");
             behavior.Initialize(new PipelineInfo("Test", "test-address-for-this-pipeline"));
 
             var currentRetry = 3;
@@ -106,7 +106,7 @@
 
 
             var fakeDispatchPipeline = new FakeDispatchPipeline();
-            var behavior = new SecondLevelRetriesBehavior(fakeDispatchPipeline, retryPolicy, new BusNotifications());
+            var behavior = new SecondLevelRetriesBehavior(fakeDispatchPipeline, retryPolicy, new BusNotifications(), "MyAddress");
             behavior.Initialize(new PipelineInfo("Test", "test-address-for-this-pipeline"));
 
             behavior.Invoke(context, () => { throw new Exception("testex"); });

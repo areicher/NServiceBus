@@ -58,7 +58,11 @@
         {
             public SagaThatIsStartedByABaseEvent()
             {
-                EndpointSetup<DefaultServer>(c => c.DisableFeature<AutoSubscribe>())
+                EndpointSetup<DefaultServer>(c =>
+                {
+                    c.EnableFeature<TimeoutManager>();
+                    c.DisableFeature<AutoSubscribe>();
+                })
                     .AddMapping<BaseEvent>(typeof(Publisher));
             }
 

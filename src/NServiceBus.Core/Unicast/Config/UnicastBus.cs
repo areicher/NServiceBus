@@ -6,6 +6,7 @@ namespace NServiceBus.Features
     using NServiceBus.Config;
     using NServiceBus.Logging;
     using NServiceBus.Pipeline;
+    using NServiceBus.Settings;
     using NServiceBus.Settings.Concurrency;
     using NServiceBus.Settings.Throttling;
     using NServiceBus.Unicast;
@@ -22,7 +23,35 @@ namespace NServiceBus.Features
             {
                 s.SetDefault<IConcurrencyConfig>(new SharedConcurrencyConfig(null));
                 s.SetDefault<IThrottlingConfig>(new NoLimitThrottlingConfig());
+                var section = s.GetConfigSection<UnicastBusConfig>();
+                if (section.TimeoutManagerAddress != null)
+                {
+                    s.Set("TimeoutManagerAddress", section.TimeoutManagerAddress);
+                }
             });
+
+            Defaults(s =>
+            {
+                var endpointInstanceName = GetEndpointInstanceName(s);
+                var rootLogicalAddress = endpointInstanceName.CreateTopLevelLogicalAddress();
+                s.SetDefault<EndpointInstanceName>(endpointInstanceName);
+                s.SetDefault<LogicalAddress>(rootLogicalAddress);
+            });
+        }
+
+        static EndpointInstanceName GetEndpointInstanceName(ReadOnlySettings settings)
+        {
+            if (!settings.GetOrDefault<bool>("IndividualizeEndpointAddress"))
+            {
+                return settings.EndpointName().CreateSingleInstanceName();
+            }
+
+            if (!settings.HasSetting("EndpointInstanceDiscriminator"))
+            {
+                throw new Exception("No endpoint instance discriminator found. This value is usually provided by your transport so please make sure you're on the lastest version of your specific transport or set the discriminator using 'configuration.ScaleOut().UniqueQueuePerEndpointInstance(myDiscriminator)'");
+            }
+
+            return settings.EndpointName().CreateInstanceName(settings.Get<string>("EndpointInstanceDiscriminator"));
         }
 
         protected internal override void Setup(FeatureConfigurationContext context)

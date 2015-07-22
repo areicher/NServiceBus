@@ -3,6 +3,7 @@
     using System;
     using EndpointTemplates;
     using AcceptanceTesting;
+    using NServiceBus.Features;
     using NUnit.Framework;
     using Saga;
     using ScenarioDescriptors;
@@ -18,7 +19,7 @@
                     .WithEndpoint<SagaEndpoint>(b => b.Given(bus =>
                         {
                             bus.SendLocal(new StartSagaMessage { SomeId = IdThatSagaIsCorrelatedOn });
-                            bus.SendLocal(new StartSagaMessage { SomeId = IdThatSagaIsCorrelatedOn, SecondMessage = true });                                    
+                            bus.SendLocal(new StartSagaMessage { SomeId = IdThatSagaIsCorrelatedOn, SecondMessage = true });
                         }))
                     .Done(c => c.SecondMessageReceived)
                     .Repeat(r => r.For(Persistence.Default))
@@ -40,8 +41,11 @@
             public SagaEndpoint()
             {
                 EndpointSetup<DefaultServer>(
-                    
-                    builder => builder.Transactions().DoNotWrapHandlersExecutionInATransactionScope());
+                    c =>
+                    {
+                        c.EnableFeature<TimeoutManager>();
+                        c.Transactions().DoNotWrapHandlersExecutionInATransactionScope();
+                    });
             }
 
             public class TestSaga05 : Saga<TestSagaData05>, IAmStartedByMessages<StartSagaMessage>
@@ -65,7 +69,7 @@
                 protected override void ConfigureHowToFindSaga(SagaPropertyMapper<TestSagaData05> mapper)
                 {
                     mapper.ConfigureMapping<StartSagaMessage>(m => m.SomeId)
-                        .ToSaga(s=>s.SomeId);
+                        .ToSaga(s => s.SomeId);
                 }
 
             }

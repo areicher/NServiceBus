@@ -3,6 +3,7 @@
     using System;
     using EndpointTemplates;
     using AcceptanceTesting;
+    using NServiceBus.Features;
     using NUnit.Framework;
     using Saga;
 
@@ -56,7 +57,7 @@
         {
             public EndpointThatHostsASaga()
             {
-                EndpointSetup<DefaultServer>()
+                EndpointSetup<DefaultServer>(c => c.EnableFeature<TimeoutManager>())
                     .AddMapping<DoSomething>(typeof (EndpointThatHandlesAMessageFromSagaAndReplies));
 
             }

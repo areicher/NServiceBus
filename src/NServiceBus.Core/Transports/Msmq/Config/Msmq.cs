@@ -37,17 +37,14 @@ namespace NServiceBus
         }
 
         /// <summary>
-        /// <see cref="TransportDefinition.GetSubScope"/>.
+        /// Creates a transport address for the input queue defined by a logical address.
         /// </summary>
-        public override string GetSubScope(string address, string qualifier)
+        /// <param name="logicalAddress">A logical address for the receiver.</param>
+        public override string CreateInputQueueTransportAddress(LogicalAddress logicalAddress)
         {
-            Guard.AgainstNullAndEmpty("address", address);
-            Guard.AgainstNullAndEmpty("qualifier", qualifier);
-
-            var msmqAddress = MsmqAddress.Parse(address);
-
-            return msmqAddress.ToString(qualifier);
+            return MsmqAddress.LocalQueue(logicalAddress).ToString();
         }
+
         /// <summary>
         /// The list of constraints supported by the MSMQ transport.
         /// </summary>

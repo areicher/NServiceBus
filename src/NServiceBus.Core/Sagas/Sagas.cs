@@ -14,7 +14,7 @@
         internal Sagas()
         {
             EnableByDefault();
-
+            DependsOn<DelayedDeliveryFeature>();
             Defaults(s =>
             {
                 conventions = s.Get<Conventions>();

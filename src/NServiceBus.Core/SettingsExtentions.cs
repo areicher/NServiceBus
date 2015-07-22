@@ -55,19 +55,28 @@ namespace NServiceBus
         /// <summary>
         /// Returns the name of this endpoint.
         /// </summary>
-        public static string EndpointName(this ReadOnlySettings settings)
+        public static EndpointName EndpointName(this ReadOnlySettings settings)
         {
             Guard.AgainstNull("settings", settings);
-            return settings.Get<string>("EndpointName");
+            return settings.Get<EndpointName>();
         }
-
+        
         /// <summary>
-        /// Returns the queue name of this endpoint.
+        /// Returns the name of this instance of the endpoint.
         /// </summary>
-        public static string LocalAddress(this ReadOnlySettings settings)
+        public static EndpointInstanceName EndpointInstanceName(this ReadOnlySettings settings)
         {
             Guard.AgainstNull("settings", settings);
-            return settings.Get<string>("NServiceBus.LocalAddress");
+            return settings.Get<EndpointInstanceName>();
+        }
+        
+        /// <summary>
+        /// Returns the root logical address of this nedpoint.
+        /// </summary>
+        public static LogicalAddress RootLogicalAddress(this ReadOnlySettings settings)
+        {
+            Guard.AgainstNull("settings", settings);
+            return settings.Get<LogicalAddress>();
         }
 
         static bool HasConstructorThatAcceptsSettings(Type sectionOverrideType)

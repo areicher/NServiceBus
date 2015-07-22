@@ -16,4 +16,5 @@ namespace NServiceBus.Unicast.Queuing
         /// </summary>
         bool ShouldCreateQueue();
     }
+
 }

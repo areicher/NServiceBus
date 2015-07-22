@@ -3,6 +3,7 @@
     using System;
     using EndpointTemplates;
     using AcceptanceTesting;
+    using NServiceBus.Features;
     using NUnit.Framework;
     using Saga;
     using ScenarioDescriptors;
@@ -81,7 +82,11 @@
         {
             public SagaEndpoint()
             {
-                EndpointSetup<DefaultServer>(b => b.ExecuteTheseHandlersFirst(typeof(TestSaga10)));
+                EndpointSetup<DefaultServer>(b =>
+                {
+                    b.EnableFeature<TimeoutManager>();
+                    b.ExecuteTheseHandlersFirst(typeof(TestSaga10));
+                });
             }
 
             public class TestSaga10 : Saga<TestSagaData10>, 

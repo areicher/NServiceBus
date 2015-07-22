@@ -130,6 +130,7 @@
     <Compile Include="DelayedDelivery\RouteDeferredMessageToTimeoutManagerBehaviorTests.cs" />
     <Compile Include="Msmq\MsmqExtensionsTests.cs" />
     <Compile Include="Msmq\MsmqHelpers.cs" />
+    <Compile Include="Msmq\MsmqAddressTests.cs" />
     <Compile Include="Reliability\Outbox\DeliveryConstraintsFactoryTests.cs" />
     <Compile Include="Routing\ApplyReplyToAddressBehaviorTests.cs" />
     <Compile Include="Routing\DetermineRouteForPublishBehaviorTests.cs" />
@@ -153,7 +154,7 @@
     <Compile Include="Hosting\HostInfoSettingsTests.cs" />
     <Compile Include="Logging\DefaultFactoryTests.cs" />
     <Compile Include="Msmq\MsmqMessageSenderTests.cs" />
-    <Compile Include="Msmq\MsmqTransportTests.cs" />
+    <Compile Include="LogicalAddressTests.cs" />
     <Compile Include="Msmq\ConnectionStringParserTests.cs" />
     <Compile Include="Persistence\InMemory\InMemoryPersisterBuilder.cs" />
     <Compile Include="Persistence\InMemory\When_persisting_a_saga_with_the_same_unique_property_as_a_completed_saga.cs" />

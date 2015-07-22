@@ -118,6 +118,25 @@ namespace NServiceBus
         }
 
         /// <summary>
+        /// Overrides the logical address which defaults to endpoint name in case the underlying queuing system can't accept the endpoint name-based input queue 
+        /// due to limitation of its naming scheme.
+        /// </summary>
+        public void OverrideLogicalAddress(string logicalAddress)
+        {
+            Guard.AgainstNullAndEmpty(logicalAddress, "logicalAddress");
+            this.logicalAddress = logicalAddress;
+        }
+
+        /// <summary>
+        /// Overrides the public transport address advertised by this endpoint.
+        /// </summary>
+        public void OverridePublicTransportAddress(string transportAddress)
+        {
+            Guard.AgainstNullAndEmpty(transportAddress, "transportAddress");
+            publicTransportAddress = transportAddress;
+        }
+
+        /// <summary>
         ///     Defines the conventions to use for this endpoint.
         /// </summary>
         public ConventionsBuilder Conventions()
@@ -159,16 +178,6 @@ namespace NServiceBus
         {
             Guard.AgainstNull("builder", builder);
             customBuilder = builder;
-        }
-
-        /// <summary>
-        /// Sets the public return address of this endpoint.
-        /// </summary>
-        /// <param name="address">The public address.</param>
-        public void OverridePublicReturnAddress(string address)
-        {
-            Guard.AgainstNullAndEmpty("address", address);
-            publicReturnAddress = address;
         }
 
         /// <summary>
@@ -229,14 +238,13 @@ namespace NServiceBus
             {
                 endpointName = endpointHelper.GetDefaultEndpointName();
             }
-
-            Settings.SetDefault("EndpointName", endpointName);
-            Settings.SetDefault("EndpointVersion", endpointVersion);
-
-            if (publicReturnAddress != null)
+            if (logicalAddress != null)
             {
-                Settings.SetDefault("PublicReturnAddress", publicReturnAddress);
+                Settings.SetDefault<LogicalAddress>(LogicalAddress.CreateTopLevel(logicalAddress));
             }
+            Settings.SetDefault<EndpointName>(new EndpointName(endpointName));
+            Settings.SetDefault("EndpointVersion", endpointVersion);
+            Settings.SetDefault("PublicTransportAddress", publicTransportAddress);
 
             container.RegisterSingleton(typeof(Conventions), conventionsBuilder.Conventions);
 
@@ -275,12 +283,13 @@ namespace NServiceBus
         List<Action<IConfigureComponents>> registrations = new List<Action<IConfigureComponents>>();
         IContainer customBuilder;
         string endpointName;
+        string logicalAddress;
+        string publicTransportAddress;
         string endpointVersion;
         IList<Type> scannedTypes;
         List<Type> excludedTypes = new List<Type>();
         List<string> excludedAssemblies = new List<string>();
         bool scanAssembliesInNestedDirectories;
-        string publicReturnAddress;
         PipelineConfiguration pipelineCollection;
     }
 }
