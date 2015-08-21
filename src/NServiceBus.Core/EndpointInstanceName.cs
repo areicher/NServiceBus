@@ -1,23 +1,51 @@
 ﻿namespace NServiceBus
 {
+    using System.Text;
+
     /// <summary>
     /// Represents a name of an endpoint instance.
     /// </summary>
     public sealed class EndpointInstanceName
     {
-        readonly string name;
+        readonly EndpointName endpointName;
+        readonly string userDiscriminator;
+        readonly string transportDiscriminator;
 
-        internal EndpointInstanceName(EndpointName endpointName, string discriminator)
+        /// <summary>
+        /// Creates a new endpoint name for a given discriminator.
+        /// </summary>
+        /// <param name="endpointName">The name of the endpoint.</param>
+        /// <param name="userDiscriminator">The discriminator provided by the user, if any.</param>
+        /// <param name="transportDiscriminator">The discriminator provided by the transport, if any.</param>
+        public EndpointInstanceName(EndpointName endpointName, string userDiscriminator, string transportDiscriminator)
         {
-            name = endpointName + discriminator;
+            this.endpointName = endpointName;
+            this.userDiscriminator = userDiscriminator;
+            this.transportDiscriminator = transportDiscriminator;
         }
 
         /// <summary>
-        /// Creates a top-level logical address for this endpoint instance.
+        /// Returns the name of the endpoint.
         /// </summary>
-        public LogicalAddress CreateTopLevelLogicalAddress()
+        public EndpointName EndpointName
         {
-            return LogicalAddress.CreateTopLevel(name);
+            get { return endpointName; }
+        }
+
+        /// <summary>
+        /// The discriminator provided by the user, if any.
+        /// </summary>
+        public string UserDiscriminator
+        {
+            get { return userDiscriminator; }
+        }
+
+        /// <summary>
+        /// The discriminator provided by the transport, if any.
+        /// </summary>
+        public string TransportDiscriminator
+        {
+            get { return transportDiscriminator; }
         }
 
         /// <summary>
@@ -28,16 +56,26 @@
         /// </returns>
         public override string ToString()
         {
-            return name;
+            var builder = new StringBuilder(endpointName.ToString());
+            if (userDiscriminator != null)
+            {
+                builder.Append("-" + userDiscriminator);
+            }
+            if (transportDiscriminator != null)
+            {
+                builder.Append("-" + transportDiscriminator);
+            }
+            return builder.ToString();
         }
 
-        private bool Equals(EndpointInstanceName other)
+
+        bool Equals(EndpointInstanceName other)
         {
-            return string.Equals(name, other.name);
+            return Equals(endpointName, other.endpointName) && string.Equals(userDiscriminator, other.userDiscriminator) && string.Equals(transportDiscriminator, other.transportDiscriminator);
         }
 
         /// <summary>
-        /// Determines whether the specified <see cref="T:System.Object"/> is equal to the current <see cref="T:System.Object"/>.
+        /// Determines whether the specified object is equal to the current object.
         /// </summary>
         /// <returns>
         /// true if the specified object  is equal to the current object; otherwise, false.
@@ -53,11 +91,7 @@
             {
                 return true;
             }
-            if (obj.GetType() != GetType())
-            {
-                return false;
-            }
-            return Equals((EndpointInstanceName) obj);
+            return obj is EndpointInstanceName && Equals((EndpointInstanceName) obj);
         }
 
         /// <summary>
@@ -68,11 +102,17 @@
         /// </returns>
         public override int GetHashCode()
         {
-            return (name != null ? name.GetHashCode() : 0);
+            unchecked
+            {
+                var hashCode = (endpointName != null ? endpointName.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (userDiscriminator != null ? userDiscriminator.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (transportDiscriminator != null ? transportDiscriminator.GetHashCode() : 0);
+                return hashCode;
+            }
         }
 
         /// <summary>
-        /// Tests for equality.
+        /// Checks for equality.
         /// </summary>
         public static bool operator ==(EndpointInstanceName left, EndpointInstanceName right)
         {
@@ -80,7 +120,7 @@
         }
 
         /// <summary>
-        /// Tests for inequality.
+        /// Checks for inequality.
         /// </summary>
         public static bool operator !=(EndpointInstanceName left, EndpointInstanceName right)
         {

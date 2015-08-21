@@ -59,9 +59,15 @@ namespace NServiceBus.Transports
         public abstract IManageSubscriptions GetSubscriptionManager();
 
         /// <summary>
-        /// Creates a transport address for the input queue defined by a logical address.
+        /// Returns the discriminator for this endpoint instance.
         /// </summary>
-        /// <param name="logicalAddress">A logical address for the receiver.</param>
-        public abstract string CreateInputQueueTransportAddress(LogicalAddress logicalAddress);
+        public abstract string GetDiscriminatorForThisEndpointInstance();
+
+        /// <summary>
+        /// Converts a given logical address to the transport address.
+        /// </summary>
+        /// <param name="logicalAddress">The logical address.</param>
+        /// <returns>The transport address.</returns>
+        public abstract string ToTransportAddress(LogicalAddress logicalAddress);
     }
 }

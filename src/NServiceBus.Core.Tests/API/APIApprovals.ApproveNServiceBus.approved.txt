@@ -62,8 +62,9 @@ namespace NServiceBus
         public void EndpointName(string name) { }
         public void ExcludeAssemblies(params string[] assemblies) { }
         public void ExcludeTypes(params System.Type[] types) { }
+        [System.ObsoleteAttribute("Please use `To be fixed as part of #133` instead. Will be removed in version 7.0." +
+            "0.", true)]
         public void OverrideLocalAddress(string queue) { }
-        public void OverrideLogicalAddress(string logicalAddress) { }
         [System.ObsoleteAttribute("Please use `OverridePublicReturnAddress(string address)` instead. Will be removed" +
             " in version 7.0.0.", true)]
         public void OverridePublicReturnAddress(NServiceBus.Address address) { }
@@ -266,7 +267,10 @@ namespace NServiceBus
     }
     public sealed class EndpointInstanceName
     {
-        public NServiceBus.LogicalAddress CreateTopLevelLogicalAddress() { }
+        public EndpointInstanceName(NServiceBus.EndpointName endpointName, string userDiscriminator, string transportDiscriminator) { }
+        public NServiceBus.EndpointName EndpointName { get; }
+        public string TransportDiscriminator { get; }
+        public string UserDiscriminator { get; }
         public override bool Equals(object obj) { }
         public override int GetHashCode() { }
         public override string ToString() { }
@@ -274,8 +278,6 @@ namespace NServiceBus
     public sealed class EndpointName
     {
         public EndpointName(string name) { }
-        public NServiceBus.EndpointInstanceName CreateInstanceName(string instanceDiscriminator) { }
-        public NServiceBus.EndpointInstanceName CreateSingleInstanceName() { }
         public override bool Equals(object obj) { }
         public override int GetHashCode() { }
         public override string ToString() { }
@@ -546,13 +548,12 @@ namespace NServiceBus
     }
     public sealed class LogicalAddress
     {
-        public NServiceBus.LogicalAddress Parent { get; }
+        public LogicalAddress(NServiceBus.EndpointInstanceName endpointInstanceName, string qualifier) { }
+        public LogicalAddress(NServiceBus.EndpointInstanceName endpointInstanceName) { }
+        public NServiceBus.EndpointInstanceName EndpointInstanceName { get; }
         public string Qualifier { get; }
-        public static NServiceBus.LogicalAddress CreateTopLevel(string root) { }
         public override bool Equals(object obj) { }
         public override int GetHashCode() { }
-        public System.Collections.Generic.IEnumerable<string> GetNameParts() { }
-        public NServiceBus.LogicalAddress Subscope(string subscopeQualifier) { }
         public override string ToString() { }
     }
     public class MessageDeserializationException : System.Runtime.Serialization.SerializationException
@@ -584,10 +585,11 @@ namespace NServiceBus
     {
         public MsmqTransport() { }
         protected internal override void Configure(NServiceBus.BusConfiguration config) { }
-        public override string CreateInputQueueTransportAddress(NServiceBus.LogicalAddress logicalAddress) { }
         public override NServiceBus.ConsistencyGuarantees.ConsistencyGuarantee GetDefaultConsistencyGuarantee() { }
+        public override string GetDiscriminatorForThisEndpointInstance() { }
         public override NServiceBus.Transports.IManageSubscriptions GetSubscriptionManager() { }
         public override System.Collections.Generic.IEnumerable<System.Type> GetSupportedDeliveryConstraints() { }
+        public override string ToTransportAddress(NServiceBus.LogicalAddress logicalAddress) { }
     }
     public class NonDurableDelivery : NServiceBus.DeliveryConstraints.DeliveryConstraint
     {
@@ -1239,7 +1241,7 @@ namespace NServiceBus.Features
         public NServiceBus.ObjectBuilder.IConfigureComponents Container { get; }
         public NServiceBus.Pipeline.PipelineSettings Pipeline { get; }
         public NServiceBus.Settings.ReadOnlySettings Settings { get; }
-        public NServiceBus.Pipeline.PipelineSettings AddSatellitePipeline(string name, string relativeAddress, out string transportAddress) { }
+        public NServiceBus.Pipeline.PipelineSettings AddSatellitePipeline(string name, string qualifier, out string transportAddress) { }
         public void RegisterReceiveBehavior(System.Func<NServiceBus.ObjectBuilder.IBuilder, NServiceBus.Transports.ReceiveBehavior> receiveBehaviorFactory) { }
     }
     public class FeatureDiagnosticData
@@ -2294,6 +2296,9 @@ namespace NServiceBus.Settings
         public void UniqueQueuePerEndpointInstance(string discriminator) { }
         [System.ObsoleteAttribute("Please use `Default starting with V6` instead. Will be removed in version 7.0.0.", true)]
         public void UseSingleBrokerQueue() { }
+        [System.ObsoleteAttribute("Please use `UniqueQueuePerEndpointInstance` instead. Will be removed in version 7" +
+            ".0.0.", true)]
+        public void UseUniqueBrokerQueuePerMachine() { }
     }
     public class SettingsHolder : NServiceBus.Settings.ReadOnlySettings
     {
@@ -2523,10 +2528,11 @@ namespace NServiceBus.Transports
         public bool HasSupportForMultiQueueNativeTransactions { get; set; }
         public bool RequireOutboxConsent { get; set; }
         protected internal void Configure(NServiceBus.BusConfiguration config) { }
-        public abstract string CreateInputQueueTransportAddress(NServiceBus.LogicalAddress logicalAddress);
         public abstract NServiceBus.ConsistencyGuarantees.ConsistencyGuarantee GetDefaultConsistencyGuarantee();
+        public abstract string GetDiscriminatorForThisEndpointInstance();
         public abstract NServiceBus.Transports.IManageSubscriptions GetSubscriptionManager();
         public abstract System.Collections.Generic.IEnumerable<System.Type> GetSupportedDeliveryConstraints();
+        public abstract string ToTransportAddress(NServiceBus.LogicalAddress logicalAddress);
     }
     public class TransportPublishOptions
     {

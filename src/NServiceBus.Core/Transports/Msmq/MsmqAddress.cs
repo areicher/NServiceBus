@@ -109,11 +109,6 @@ namespace NServiceBus.Transports.Msmq
             return this;
         }
 
-        public static MsmqAddress LocalQueue(LogicalAddress logicalAddress)
-        {
-            return new MsmqAddress(string.Join(".", logicalAddress.GetNameParts()), RuntimeEnvironment.MachineName);
-        }
-
         public string FullPath
         {
             get

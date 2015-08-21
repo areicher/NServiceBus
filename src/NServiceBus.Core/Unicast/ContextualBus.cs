@@ -6,7 +6,6 @@ namespace NServiceBus.Unicast
     using NServiceBus.ConsistencyGuarantees;
     using NServiceBus.DeliveryConstraints;
     using NServiceBus.Extensibility;
-    using NServiceBus.Features;
     using NServiceBus.Features.Routing;
     using NServiceBus.MessageInterfaces;
     using NServiceBus.ObjectBuilder;

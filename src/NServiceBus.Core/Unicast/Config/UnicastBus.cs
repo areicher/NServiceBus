@@ -9,6 +9,7 @@ namespace NServiceBus.Features
     using NServiceBus.Settings;
     using NServiceBus.Settings.Concurrency;
     using NServiceBus.Settings.Throttling;
+    using NServiceBus.Transports;
     using NServiceBus.Unicast;
     using NServiceBus.Unicast.Messages;
     using TransactionSettings = NServiceBus.Unicast.Transport.TransactionSettings;
@@ -33,7 +34,7 @@ namespace NServiceBus.Features
             Defaults(s =>
             {
                 var endpointInstanceName = GetEndpointInstanceName(s);
-                var rootLogicalAddress = endpointInstanceName.CreateTopLevelLogicalAddress();
+                var rootLogicalAddress = new LogicalAddress(endpointInstanceName);
                 s.SetDefault<EndpointInstanceName>(endpointInstanceName);
                 s.SetDefault<LogicalAddress>(rootLogicalAddress);
             });
@@ -41,17 +42,13 @@ namespace NServiceBus.Features
 
         static EndpointInstanceName GetEndpointInstanceName(ReadOnlySettings settings)
         {
-            if (!settings.GetOrDefault<bool>("IndividualizeEndpointAddress"))
-            {
-                return settings.EndpointName().CreateSingleInstanceName();
-            }
-
-            if (!settings.HasSetting("EndpointInstanceDiscriminator"))
+            var userDiscriminator = settings.GetOrDefault<string>("EndpointInstanceDiscriminator");
+            var transportDiscriminator = settings.Get<TransportDefinition>().GetDiscriminatorForThisEndpointInstance();
+            if (userDiscriminator == null && transportDiscriminator == null)
             {
                 throw new Exception("No endpoint instance discriminator found. This value is usually provided by your transport so please make sure you're on the lastest version of your specific transport or set the discriminator using 'configuration.ScaleOut().UniqueQueuePerEndpointInstance(myDiscriminator)'");
             }
-
-            return settings.EndpointName().CreateInstanceName(settings.Get<string>("EndpointInstanceDiscriminator"));
+            return new EndpointInstanceName(settings.EndpointName(), userDiscriminator, transportDiscriminator);
         }
 
         protected internal override void Setup(FeatureConfigurationContext context)

@@ -24,7 +24,7 @@
                 var overriddenPublicTransportAddress = s.GetOrDefault<string>("PublicTransportAddress");
 
                 var transport = s.Get<TransportDefinition>();
-                var defaultTransportAddress = transport.CreateInputQueueTransportAddress(s.RootLogicalAddress());
+                var defaultTransportAddress = transport.ToTransportAddress(s.RootLogicalAddress());
                 var publicAddressesConfiguration = new PublicAddressesConfiguration(overriddenPublicTransportAddress, defaultTransportAddress);
                 s.SetDefault<PublicAddressesConfiguration>(publicAddressesConfiguration);
                 s.SetDefault<IPublicAddress>(publicAddressesConfiguration);

@@ -7,7 +7,7 @@
 
     public class When_individualization_is_enabled : NServiceBusAcceptanceTest
     {
-        const string discriminator = "-something";
+        const string discriminator = "something";
 
 
         [Test]
@@ -18,7 +18,7 @@
                     .Run();
 
 
-            Assert.True(context.Address.Contains("-something"), context.Address + " should contain the discriminator " + discriminator);
+            Assert.True(context.Address.Contains("something"), context.Address + " should contain the discriminator " + discriminator);
 
         }
 

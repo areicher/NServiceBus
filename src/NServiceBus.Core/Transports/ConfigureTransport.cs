@@ -26,7 +26,7 @@ namespace NServiceBus.Transports
         protected internal override void Setup(FeatureConfigurationContext context)
         {
             var selectedTransportDefinition = context.Settings.Get<TransportDefinition>();
-            context.Settings.Get<QueueBindings>().BindReceiving(selectedTransportDefinition.CreateInputQueueTransportAddress(context.Settings.RootLogicalAddress()));
+            context.Settings.Get<QueueBindings>().BindReceiving(selectedTransportDefinition.ToTransportAddress(context.Settings.RootLogicalAddress()));
             var connectionString = context.Settings.Get<TransportConnectionString>().GetConnectionStringOrNull();
 
             if (connectionString == null && RequiresConnectionString)

@@ -66,10 +66,17 @@
             {
                 throw new NotImplementedException();
             }
-            public override string CreateInputQueueTransportAddress(LogicalAddress logicalAddress)
+
+            public override string GetDiscriminatorForThisEndpointInstance()
             {
-                return logicalAddress.ToString();
+                return null;
             }
+
+            public override string ToTransportAddress(LogicalAddress logicalAddress)
+            {
+                throw new NotImplementedException();
+            }
+
         }
 
             public class TransportThatDoesNotSetADefaultDiscriminatorConfigurator : ConfigureTransport

@@ -118,16 +118,6 @@ namespace NServiceBus
         }
 
         /// <summary>
-        /// Overrides the logical address which defaults to endpoint name in case the underlying queuing system can't accept the endpoint name-based input queue 
-        /// due to limitation of its naming scheme.
-        /// </summary>
-        public void OverrideLogicalAddress(string logicalAddress)
-        {
-            Guard.AgainstNullAndEmpty(logicalAddress, "logicalAddress");
-            this.logicalAddress = logicalAddress;
-        }
-
-        /// <summary>
         /// Overrides the public transport address advertised by this endpoint.
         /// </summary>
         public void OverridePublicTransportAddress(string transportAddress)
@@ -181,16 +171,6 @@ namespace NServiceBus
         }
 
         /// <summary>
-        /// Sets the address of this endpoint.
-        /// </summary>
-        /// <param name="queue">The queue name.</param>
-        public void OverrideLocalAddress(string queue)
-        {
-            Guard.AgainstNullAndEmpty("queue", queue);
-            Settings.Set("NServiceBus.LocalAddress", queue);
-        }
-
-        /// <summary>
         ///     Specifies the range of types that NServiceBus scans for handlers etc.
         /// </summary>
         internal void TypesToScanInternal(IEnumerable<Type> typesToScan)
@@ -238,10 +218,6 @@ namespace NServiceBus
             {
                 endpointName = endpointHelper.GetDefaultEndpointName();
             }
-            if (logicalAddress != null)
-            {
-                Settings.SetDefault<LogicalAddress>(LogicalAddress.CreateTopLevel(logicalAddress));
-            }
             Settings.SetDefault<EndpointName>(new EndpointName(endpointName));
             Settings.SetDefault("EndpointVersion", endpointVersion);
             Settings.SetDefault("PublicTransportAddress", publicTransportAddress);
@@ -283,7 +259,6 @@ namespace NServiceBus
         List<Action<IConfigureComponents>> registrations = new List<Action<IConfigureComponents>>();
         IContainer customBuilder;
         string endpointName;
-        string logicalAddress;
         string publicTransportAddress;
         string endpointVersion;
         IList<Type> scannedTypes;

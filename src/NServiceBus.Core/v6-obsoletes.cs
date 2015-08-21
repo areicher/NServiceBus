@@ -65,6 +65,15 @@ namespace NServiceBus
             }
         }
 
+        [ObsoleteEx(
+            ReplacementTypeOrMember = "To be fixed as part of #133",
+            RemoveInVersion = "7.0",
+            TreatAsErrorFromVersion = "6.0")]
+        public void OverrideLocalAddress(string queue)
+        {
+            throw new NotImplementedException();
+        }
+
     }
 
     public partial class Configure

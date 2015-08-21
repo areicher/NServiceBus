@@ -46,12 +46,12 @@
         /// <summary>
         /// Creates a new satellite processing pipeline.
         /// </summary>
-        public PipelineSettings AddSatellitePipeline(string name, string relativeAddress, out string transportAddress)
+        public PipelineSettings AddSatellitePipeline(string name, string qualifier, out string transportAddress)
         {
-            var rootLogicalAddress = config.Settings.RootLogicalAddress();
-            var satelliteLogicalAddress = rootLogicalAddress.Subscope(relativeAddress);
+            var instanceName = config.Settings.EndpointInstanceName();
+            var satelliteLogicalAddress = new LogicalAddress(instanceName, qualifier);
             var transportDefinition = config.Settings.Get<TransportDefinition>();
-            transportAddress = transportDefinition.CreateInputQueueTransportAddress(satelliteLogicalAddress);
+            transportAddress = transportDefinition.ToTransportAddress(satelliteLogicalAddress);
 
             var pipelineModifications = new SatellitePipelineModifications(name, transportAddress);
             config.Settings.Get<PipelineConfiguration>().SatellitePipelines.Add(pipelineModifications);

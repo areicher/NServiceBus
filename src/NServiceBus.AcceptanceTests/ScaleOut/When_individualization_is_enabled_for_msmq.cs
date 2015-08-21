@@ -4,6 +4,8 @@
     using NServiceBus.AcceptanceTests.EndpointTemplates;
     using NServiceBus.AcceptanceTests.ScenarioDescriptors;
     using NServiceBus.Settings;
+    using NServiceBus.Support;
+    using NServiceBus.Transports;
     using NUnit.Framework;
 
     public class When_individualization_is_enabled_for_msmq : NServiceBusAcceptanceTest
@@ -14,7 +16,7 @@
             Scenario.Define<Context>()
                     .WithEndpoint<IndividualizedEndpoint>().Done(c => c.EndpointsStarted)
                     .Repeat(r => r.For<MsmqOnly>())
-                    .Should(c => Assert.AreEqual(c.EndpointName, c.Address))
+                    .Should(c => Assert.AreEqual(c.EndpointName + "@" + RuntimeEnvironment.MachineName, c.Address))
                     .Run();
         }
 
@@ -40,7 +42,7 @@
 
                 public void Start()
                 {
-                    Context.Address = ReadOnlySettings.RootLogicalAddress().ToString();
+                    Context.Address = ReadOnlySettings.Get<TransportDefinition>().ToTransportAddress(ReadOnlySettings.RootLogicalAddress());
                     Context.EndpointName = ReadOnlySettings.EndpointName().ToString();
                 }
 

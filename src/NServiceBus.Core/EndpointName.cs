@@ -16,24 +16,6 @@
         }
 
         /// <summary>
-        /// Creates a name for an instance of a non-scaled out endpoint.
-        /// </summary>
-        public EndpointInstanceName CreateSingleInstanceName()
-        {
-            return new EndpointInstanceName(this, "");
-        }
-
-        /// <summary>
-        /// Creates a name for an instance of this endpoint using a provided host-dependent discriminator (e.g. machine name, role instance name etc.).
-        /// </summary>
-        /// <param name="instanceDiscriminator">A discriminator (e.g. machine name, role instance name etc.).</param>
-        public EndpointInstanceName CreateInstanceName(string instanceDiscriminator)
-        {
-            Guard.AgainstNullAndEmpty(instanceDiscriminator, "instanceDiscriminator");
-            return new EndpointInstanceName(this, instanceDiscriminator);
-        }
-
-        /// <summary>
         /// Returns the string representation of the endpoint name.
         /// </summary>
         public override string ToString()
