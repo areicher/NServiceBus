@@ -1,13 +1,14 @@
 ﻿namespace NServiceBus.Features
 {
     using System;
+    using NServiceBus.CircuitBreakers;
     using NServiceBus.DelayedDelivery;
     using NServiceBus.DelayedDelivery.TimeoutManager;
     using NServiceBus.DeliveryConstraints;
     using NServiceBus.Features.DelayedDelivery;
+    using NServiceBus.Transports;
     using Settings;
     using Timeout.Core;
-    using Timeout.Hosting.Windows;
 
     /// <summary>
     /// Used to configure the timeout manager that provides message deferral.
@@ -47,7 +48,7 @@
             context.Container.ConfigureComponent(b => new StoreTimeoutBehavior(b.Build<ExpiredTimeoutsPoller>(),
                 b.Build<IDispatchMessages>(),
                 b.Build<IPersistTimeouts>(),
-                context.Settings.EndpointName()), DependencyLifecycle.SingleInstance);
+                context.Settings.EndpointName().ToString()), DependencyLifecycle.SingleInstance);
 
             string dispatcherAddress;
             var dispatcherProcessorPipeline = context.AddSatellitePipeline("Timeout Dispatcher Processor", "TimeoutsDispatcher", out dispatcherAddress);

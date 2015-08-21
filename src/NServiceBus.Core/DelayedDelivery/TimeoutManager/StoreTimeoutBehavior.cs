@@ -116,7 +116,7 @@ namespace NServiceBus
                     State = message.Body,
                     Time = DateTimeExtensions.ToUtcDateTime(expire),
                     Headers = message.Headers,
-                    OwningTimeoutManager = EndpointName.ToString()
+                    OwningTimeoutManager = owningTimeoutManager
                 };
 
                 if (data.Time.AddSeconds(-1) <= DateTime.UtcNow)
