@@ -4,6 +4,7 @@ namespace NServiceBus.Features
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
+    using System.Text.RegularExpressions;
     using AutomaticSubscriptions;
     using Config;
     using Faults;
@@ -11,6 +12,7 @@ namespace NServiceBus.Features
     using NServiceBus.Hosting;
     using NServiceBus.Support;
     using NServiceBus.Unicast;
+    using NServiceBus.Utils;
     using Pipeline;
     using Pipeline.Contexts;
     using Transports;
@@ -26,8 +28,18 @@ namespace NServiceBus.Features
 
             Defaults(s =>
             {
+/*
                 string fullPathToStartingExe;
                 s.SetDefault("NServiceBus.HostInformation.HostId", GenerateDefaultHostId(out fullPathToStartingExe));
+*/
+	            var HostIdSettingsKey = "NServiceBus.HostInformation.HostId";
+				var fullPathToStartingExe = PathUtilities.SanitizedPath(Environment.CommandLine);
+
+                if (!s.HasExplicitValue(HostIdSettingsKey))
+                {
+                  s.SetDefault(HostIdSettingsKey, DeterministicGuid.Create(fullPathToStartingExe, RuntimeEnvironment.MachineName));
+                }
+
                 s.SetDefault("NServiceBus.HostInformation.DisplayName", RuntimeEnvironment.MachineName);
                 s.SetDefault("NServiceBus.HostInformation.Properties", new Dictionary<string, string>
                 {
@@ -39,6 +51,19 @@ namespace NServiceBus.Features
             });
         }
 
+		static class PathUtilities
+		{
+			public static string SanitizedPath(string commandLine)
+			{
+				if (commandLine.StartsWith("\""))
+				{
+					return (from Match match in Regex.Matches(commandLine, "\"([^\"]*)\"")
+						select match.ToString()).First().Trim('"');
+				}
+
+				return commandLine.Split(' ').First();
+			}
+		}
       
         protected internal override void Setup(FeatureConfigurationContext context)
         {
@@ -72,14 +97,14 @@ namespace NServiceBus.Features
             SetTransportThresholds(context);
         }
 
-        static Guid GenerateDefaultHostId(out string fullPathToStartingExe)
+     /*   static Guid GenerateDefaultHostId(out string fullPathToStartingExe)
         {
             var gen = new DefaultHostIdGenerator(Environment.CommandLine, RuntimeEnvironment.MachineName);
 
             fullPathToStartingExe = gen.FullPathToStartingExe;
 
             return gen.HostId;
-        }
+        }*/
 
         void SetTransportThresholds(FeatureConfigurationContext context)
         {
